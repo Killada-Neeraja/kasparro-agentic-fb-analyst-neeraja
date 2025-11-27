@@ -2,48 +2,56 @@
 
 ## Quick Start
 ```bash
-python -V  # should be >= 3.10
-python -m venv .venv && source .venv/bin/activate  # win: .venv\Scripts\activate
-pip install -r requirements.txt
-python src/run.py "Analyze ROAS drop in last 7 days"
-```
+python -V  # ensure Python >= 3.10
+pip install pandas
+python src/run.py
 
 ## Data
-- Place the full CSV locally and set `DATA_CSV=/path/to/synthetic_fb_ads_undergarments.csv`
-- Or copy a small sample to `data/sample_fb_ads.csv`.
-- See `data/README.md` for details.
 
 ## Config
-Edit `config/config.yaml`:
-```yaml
 python: "3.10"
 random_seed: 42
 confidence_min: 0.6
 use_sample_data: true
-```
+
+
 
 ## Repo Map
-- `src/agents/` — planner.py, data_agent.py, insight_agent.py, evaluator.py, creative_generator.py
-- `prompts/` — *.md prompt files with variable placeholders
-- `reports/` — report.md, insights.json, creatives.json
-- `logs/` — json traces
-- `tests/` — test_evaluator.py
+src/
+ ├─ run.py                  → Runs the full pipeline
+ └─ agents/
+     ├─ planner.py         → Defines the task plan/steps
+     ├─ analyst.py         → Loads CSV, generates insights & creatives
+     ├─ evaluator.py       → Validates outputs & saves evaluation results
+
+data/
+ └─ synthetic_fb_ads_undergarments.csv  → Input dataset
+reports/
+ ├─ insights.json          → Best campaign/platform/country/creative type
+ ├─ creatives.json         → Recommended messaging for ads
+ └─ report.md              → Final human-readable summary
+logs/                      → Placeholder for future logging
+tests/                     → Placeholder for future tests
+prompts/                   → Placeholder for LLM prompts
 
 ## Run
-```bash
-make run  # or: python src/run.py "Analyze ROAS drop"
-```
+python src/run.py
 
 ## Outputs
-- `reports/report.md`
-- `reports/insights.json`
-- `reports/creatives.json`
+The agent pipeline generates three files:
+reports/insights.json
+reports/creatives.json
+reports/report.md
 
 ## Observability
-- Include Langfuse screenshots or JSON logs in `reports/observability/`.
+This project does not currently include Langfuse or external monitoring.
+However, the repository structure includes folders (`logs/`, `reports/`) to support
+future observability improvements such as JSON logs or performance trace exports.
+
 
 ## Release
-- Tag: `v1.0` and paste link here.
+Version: v1.0 — Final Assignment Submission
+Core features implemented
+Automatic pipeline generation complete
 
 ## Self-Review
-- Link to PR describing design choices & tradeoffs.
