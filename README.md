@@ -1,15 +1,19 @@
 # Kasparro — Agentic Facebook Performance Analyst
 
-This repository implements a simple, modular **agentic system** that analyzes Facebook Ads performance for an undergarments brand. It produces insights, recommended creative strategies, and a validation report — fulfilling the assignment requirements for an agent-based pipeline.
+A modular agentic system that analyzes Facebook Ads performance for an undergarments brand.  
+It produces insights, creative recommendations, and a validation report — as required in the assignment.
 
 ---
 
 ## Quick Start
+
 ```bash
 python -V  # should be >= 3.10
-python -m venv .venv && source .venv/bin/activate  # win: .venv\Scripts\activate
+python -m venv .venv && source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python src/run.py "Analyze ROAS drop in last 7 days"
+```
+
 
 
 ## Data
@@ -20,6 +24,7 @@ impressions, clicks, spend, revenue, ROAS, CTR, platform, creative_type, audienc
 Insights are generated directly from this dataset.
 
 ## Config
+File: config/config.yaml
 python: "3.10"
 random_seed: 42
 confidence_min: 0.6
@@ -31,6 +36,7 @@ sample_fraction: 0.3
 ├── data/
 │   ├── synthetic_fb_ads_undergarments.csv
 ├── logs/
+├── prompts/
 ├── reports/
 │   ├── report.md
 │   ├── insights.json
@@ -45,23 +51,24 @@ sample_fraction: 0.3
 ├── tests/
 │   ├── test_evaluator.py
 
+
 ## Run
 python src/run.py "Analyze ROAS drop"
+Outputs saved to reports/.
 
 ## Outputs
-The agent pipeline generates three files:
 reports/insights.json
 reports/creatives.json
 reports/report.md
+reports/evaluation.json
 
 ## Observability
-A structured JSON trace is created at:
+Execution trace stored at:
 logs/pipeline_trace.json
 Trace includes:
-user query
-loaded config
-evaluation verdict
-Framework easily extends to Langfuse / agent-level monitoring when needed.
+input query
+config used
+insights + evaluation decision
 
 ## Release
 Assignment submission build: v1.0
@@ -69,12 +76,12 @@ Repo link:
 🔗 https://github.com/Killada-Neeraja/kasparro-agentic-fb-analyst-neeraja
 
 ## Self-Review
-- Clear roadmap execution: Planner → Analyst → Evaluator
-JSON outputs enable downstream integration
-Threshold-based evaluation demonstrates practical QA thinking
-Structure follows Kasparro-provided template
-Future improvements:
-Add LLM-driven creative generation
-More evaluation rules
-Langfuse observability
-Unit tests for all agents (Planner & Analyst)
+-gents: Planner → Analyst → Evaluator
+Validation structure: Basic threshold checks + confidence scoring
+JSON-based outputs enable automation/integration
+Structure closely follows assignment specification
+Future recommended improvements:
+Proper Creative Generation Agent with LLM prompts
+Enhanced evaluator logic
+Langfuse or similar tracing support
+Additional agent unit tests
