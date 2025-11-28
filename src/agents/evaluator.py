@@ -1,53 +1,61 @@
-from pathlib import Path
-import json
+import math
+from typing import Dict, Any, List
 
 
 class EvaluatorAgent:
     """
-    Evaluates insights and creatives.
+    Evaluates the quality of insights produced by the InsightAgent.
 
-    Uses a confidence_min threshold (from config) to decide overall status.
+    Inputs:
+      insights_payload: dict with key "insights" -> list of insight dicts
     """
 
-    def __init__(self, reports_dir: str = "reports", confidence_min: float = 0.6):
-        self.reports_dir = Path(reports_dir)
-        self.reports_dir.mkdir(parents=True, exist_ok=True)
-        self.confidence_min = confidence_min
+    def __init__(self, config: Dict[str, Any]):
+        self.confidence_min = float(config.get("confidence_min", 0.6))
+        self.min_insights = int(config.get("min_insights", 3))
 
-    def evaluate(self, insights: dict, creatives: list) -> dict:
-        result = {}
+    def evaluate(self, insights_payload: Dict[str, Any]) -> Dict[str, Any]:
+        insights: List[Dict[str, Any]] = insights_payload.get("insights", []) or []
 
-        required_keys = [
-            "best_campaign_by_roas",
-            "best_platform_by_revenue",
-            "best_country_by_cvr",
-            "best_creative_type",
-            "best_audience_type",
-        ]
-        missing = [k for k in required_keys if k not in insights]
-        result["missing_keys"] = missing
-        result["num_creatives"] = len(creatives)
-        result["has_ugc"] = any(
-            c.get("creative_type", "").lower() == "ugc"
-            for c in creatives
-        )
+        issues = []
 
-        # If you later add a "roas_hypothesis" with a confidence field, this will pick it up.
-        roas_hypothesis = insights.get("roas_hypothesis", {})
-        if isinstance(roas_hypothesis, dict):
-            hypo_conf = roas_hypothesis.get("confidence", 0.0)
-        else:
-            hypo_conf = 0.0
-        result["hypothesis_confidence"] = hypo_conf
+        # 1) Basic existence check
+        if len(insights) == 0:
+            issues.append("no_insights_generated")
 
-        # Pass/Fail logic using config threshold
-        if len(missing) == 0 and result["num_creatives"] > 0 and (hypo_conf == 0.0 or hypo_conf >= self.confidence_min):
-            result["status"] = "pass"
-        else:
-            result["status"] = "needs_improvement"
+        if len(insights) < self.min_insights:
+            issues.append(f"too_few_insights(<{self.min_insights})")
 
-        out_path = self.reports_dir / "evaluation.json"
-        with out_path.open("w") as f:
-            json.dump(result, f, indent=4)
+        # 2) Schema & value checks
+        for idx, ins in enumerate(insights):
+            prefix = f"insight_{idx}"
 
-        return result
+            # required keys
+            for key in ["id", "title", "description", "impact", "confidence"]:
+                if key not in ins:
+                    issues.append(f"{prefix}_missing_{key}")
+
+            # impact domain
+            impact = ins.get("impact")
+            if impact not in ("high", "medium", "low"):
+                issues.append(f"{prefix}_invalid_impact:{impact}")
+
+            # confidence range
+            try:
+                conf = float(ins.get("confidence", 0.0))
+                if math.isnan(conf) or conf < 0 or conf > 1:
+                    issues.append(f"{prefix}_invalid_confidence:{conf}")
+                elif conf < self.confidence_min:
+                    issues.append(f"{prefix}_low_confidence:{conf}")
+            except (TypeError, ValueError):
+                issues.append(f"{prefix}_non_numeric_confidence")
+
+        # 3) Final verdict
+        status = "pass" if len(issues) == 0 else "fail"
+
+        return {
+            "status": status,
+            "issues": issues,
+            "insight_count": len(insights),
+            "confidence_min": self.confidence_min,
+        }
