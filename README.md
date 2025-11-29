@@ -92,7 +92,22 @@ The agent pipeline generates three files:
 
 Example insight structure:
 ```json
-{"metric": "roas", "change": "decrease", "reason": "CTR dropped; CPC rising"}
+{
+  "status": "pass",
+  "insights_valid": true,
+  "creative_alignment": "good",
+  "evidence_strength": 0.72,
+  "reasons": [
+    "ROAS dropped > 10% vs previous period",
+    "CTR decrease correlated with ROAS decline",
+    "Creatives target top-performing audience (UK Retargeting)"
+  ],
+  "recommendations": [
+    "Add UGC variant to boost trust",
+    "Test new CTA and first-frame hooks"
+  ]
+}
+
 ```
 
 ---
